@@ -1,0 +1,79 @@
+namespace FsSCAD
+
+module Components =
+
+  type MultiMatrix_Row = float * float * float
+  type MultiMatrix = MultiMatrix_Row * MultiMatrix_Row * MultiMatrix_Row
+
+  type Component =
+    // Base components
+    | Cube of size:(float*float*float) * center:bool
+    | Sphere of radius:float * diameter:float * fragmentAngle:float * fragmentSize:float * resolution:float
+    | Cylinder of height:float * radius1:float * radius2:float * center:bool
+    | Polyhedron of points:list<int*int*int> * faces:list<int*int*int> * convexity:int
+    // Transformations of components
+    | Scale of vector:(float*float*float) * target:Component
+    | Resize of newSize:(float*float*float) * target:Component
+    | Rotate of angle:float * vector:(float*float*float) * target:Component
+    | Translate of vector:(float*float*float) * target:Component
+    | Mirror of vector:(float*float*float) * target:Component
+    | MultiMatrix of mmatrix:MultiMatrix * target:Component
+    | ColorRGBA of color:(float*float*float*float) * target:Component
+    // TODO: we should use a more descriptive type than `string` for ColorHex
+    | ColorHex of color:string * target:Component
+    // TODO: use DU to specify allowed color names
+    | ColorName of color:string * target:Component
+    | Offset of r:float * delta:float * chamfer:bool * target:Component
+    | Minkowski of target:Component
+    | Hull of target:Component
+    // Combinations of components
+    | Union of targets:list<Component>
+    | Intersection of targets:list<Component>
+    | Difference of baseComponent:Component * diffComponents:list<Component>
+
+  type IComponent =
+    abstract member Component : Component
+
+  module Component =
+
+    let boolToString (b: bool) : string =
+      match b with
+      | true -> "true"
+      | false -> "false"
+
+    let ptsToString (pts: list<int*int*int>) : string =
+      pts
+      |> List.map (fun (x, y, z) -> $"[{x}, {y}, {z}]")
+      |> fun strs -> System.String.Join(',', strs)
+      |> fun str -> $"[ {str} ]"
+
+    let multiMatrixToString (((x1,y1,z1), (x2,y2,z2), (x3,y3,z3)): MultiMatrix) : string =
+      $"[ [{x1}, {y1}, {y2} ], [ {x2}, {y2}, {z2} ], [ {x3}, {y3}, {z3} ] ]"
+
+    let componentsToString (toSCADFunc: Component -> string) =
+      List.map toSCADFunc >> List.toArray >> fun strs -> System.String.Join(';', strs) + ";"
+
+    let rec toSCAD (comp: Component) : string =
+      match comp with
+      // Base components
+      | Cube ((x, y, z), center) -> $"cube(size = [{x}, {y}, {z}], center = {boolToString center})"
+      | Sphere (r, d, fa, fs, fn) -> $"sphere(r = {r}, d = {d}, $fa = {fa}, $fs = {fs}, $fn = {fn}"
+      | Cylinder (h, r1, r2, center) -> $"cylinder(h = {h}, r1 = {r1}, r2 = {r2}, center = {boolToString center})"
+      | Polyhedron (points, faces, convexity) -> $"polyhedron(points = {ptsToString points}, faces = {ptsToString faces}, convexity = {convexity})"
+      // Transformations of components
+      | Scale ((x, y, z), target) -> $"scale(v = [{x}, {y}, {z}]) {toSCAD target}"
+      | Resize ((x, y, z), target) -> $"resize(newSize = [{x}, {y}, {z}]) {toSCAD target}"
+      | Rotate (a, (x, y, z), target) -> $"rotate(a = {a}, v = [{x}, {y}, {z}]) {toSCAD target}"
+      | Translate ((x, y, z), target) -> $"translate(v = [{x}, {y}, {z}]) {toSCAD target}"
+      | Mirror ((x, y, z), target) -> $"mirror(v = [{x}, {y}, {z}]) {toSCAD target}"
+      | MultiMatrix (m, target) -> $"multimatrix(m = {multiMatrixToString m}) {toSCAD target}"
+      | ColorRGBA ((r, g, b, a), target) -> $"color(c = [{r}, {g}, {b}, {a}]) {toSCAD target}"
+      | ColorHex (c, target) -> $"color(c = {c}) {toSCAD target}"
+      | ColorName (c, target) -> $"color(c = {c}) {toSCAD target}"
+      | Offset (r, delta, chamfer, target) -> $"offset(r = {r}, delta = {delta}, chamfer = {boolToString chamfer}) {toSCAD target}"
+      | Minkowski (target) -> $"minkowski() {toSCAD target}"
+      | Hull (target) -> $"hull() {toSCAD target}"
+      // Combinations of components
+      | Union targets -> $"union() {{ {targets |> componentsToString toSCAD} }}"
+      | Intersection targets -> $"intersection() {{ {targets |> componentsToString toSCAD} }}"
+      | Difference (baseComponent, diffComponents) -> $"difference() {{ {baseComponent :: diffComponents |> componentsToString toSCAD} }}"
