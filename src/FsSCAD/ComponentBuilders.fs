@@ -1,6 +1,6 @@
 namespace FsSCAD
 
-/// helper functon for component creation
+/// helper functons for component creation
 module ComponentBuilders =
   open Components
 
@@ -14,8 +14,6 @@ module ComponentBuilders =
     let cube size = Cube(size = (size, size, size), center = false)
     /// A cube with the given side length centered at the origin
     let centerCube size = Cube(size = (size, size, size), center = true)
-    // TODO: set up functions here for all other base components
-    // TODO: provide functions for default values of shapes (i.e. Cube() -> Cube(size = (1,1,1), center = true))
 
   [<AutoOpen>]
   module Transfomations =

@@ -19,9 +19,7 @@ module Components =
     | Mirror of vector:(float*float*float) * target:Component
     | MultiMatrix of mmatrix:MultiMatrix * target:Component
     | ColorRGBA of color:(float*float*float*float) * target:Component
-    // TODO: we should use a more descriptive type than `string` for ColorHex
     | ColorHex of color:string * target:Component
-    // TODO: use DU to specify allowed color names
     | ColorName of color:string * target:Component
     | Offset of r:float * delta:float * chamfer:bool * target:Component
     | Minkowski of target:Component

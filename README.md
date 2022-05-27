@@ -85,7 +85,7 @@ let myCube = // Component
     |> rotate 20 (45, 45, 45)
     |> translate (10, 20, 30)
 
-// or define a custom translation as a composition of base translations
+// or define a custom transformation as a composition of base transformations
 let myTranslation = // Component -> Component
     rotate 20 (45, 45, 45)
     >> translate (10, 20, 30)
