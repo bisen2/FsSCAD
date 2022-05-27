@@ -5,6 +5,9 @@ module Components =
   type MultiMatrix_Row = float * float * float
   type MultiMatrix = MultiMatrix_Row * MultiMatrix_Row * MultiMatrix_Row
 
+  /// Type describing an arbitrary OpenSCAD component.
+  ///
+  /// A component can be a base component, a transformation of a target component, or a combination of multiple components.
   type Component =
     // Base components
     | Cube of size:(float*float*float) * center:bool
@@ -29,30 +32,30 @@ module Components =
     | Intersection of targets:list<Component>
     | Difference of baseComponent:Component * diffComponents:list<Component>
 
+  /// The interface that all objects describing a components must use to expose their internal structure.
   type IComponent =
-    abstract member Component : Component
+    /// The internal representation of the component.
+    abstract member Component: Component
 
   module Component =
 
-    let boolToString (b: bool) : string =
-      match b with
+    let boolToString: bool -> string = function
       | true -> "true"
       | false -> "false"
 
-    let ptsToString (pts: list<int*int*int>) : string =
-      pts
-      |> List.map (fun (x, y, z) -> $"[{x}, {y}, {z}]")
-      |> fun strs -> System.String.Join(',', strs)
-      |> fun str -> $"[ {str} ]"
+    let ptsToString: list<int*int*int> -> string =
+      List.map (fun (x, y, z) -> $"[{x}, {y}, {z}]")
+      >> fun strs -> System.String.Join(',', strs)
+      >> sprintf "[ %s ]"
 
     let multiMatrixToString (((x1,y1,z1), (x2,y2,z2), (x3,y3,z3)): MultiMatrix) : string =
-      $"[ [{x1}, {y1}, {y2} ], [ {x2}, {y2}, {z2} ], [ {x3}, {y3}, {z3} ] ]"
+      $"[ [{x1}, {y1}, {z1} ], [ {x2}, {y2}, {z2} ], [ {x3}, {y3}, {z3} ] ]"
 
     let componentsToString (toSCADFunc: Component -> string) =
       List.map toSCADFunc >> List.toArray >> fun strs -> System.String.Join(';', strs) + ";"
 
-    let rec toSCAD (comp: Component) : string =
-      match comp with
+    /// Converts a component object to a string containing the OpenSCAD code to generate the component.
+    let rec toSCAD: Component -> string = function
       // Base components
       | Cube ((x, y, z), center) -> $"cube(size = [{x}, {y}, {z}], center = {boolToString center})"
       | Sphere (r, d, fa, fs, fn) -> $"sphere(r = {r}, d = {d}, $fa = {fa}, $fs = {fs}, $fn = {fn}"
