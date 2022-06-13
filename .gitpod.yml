@@ -2,7 +2,7 @@ image:
   file: .devcontainer/Dockerfile
 
 tasks:
-  init: cp -r /usr/share/dotnet /workspaces
+  - init: cp -r /usr/share/dotnet /workspaces
 
 vscode:
   extensions:
