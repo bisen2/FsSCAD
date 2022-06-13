@@ -1,9 +1,0 @@
-image:
-  file: .devcontainer/Dockerfile
-
-tasks:
-  - init: cp -r /usr/share/dotnet /workspace
-
-vscode:
-  extensions:
-    - Ionide.Ionide-fsharp
