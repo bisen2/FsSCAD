@@ -1,0 +1,14 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.csharp",
+                "Ionide.Ionide-fsharp"
+            ]
+        }
+    }
+}
