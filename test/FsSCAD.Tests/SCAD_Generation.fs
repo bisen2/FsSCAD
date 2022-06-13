@@ -1,3 +1,5 @@
+/// These tests compare the Component.toSCAD output to the expected strings.
+/// Their main purpose is detecting breaking changes.
 module SCAD_Generation
 
 open FsCheck.Xunit
