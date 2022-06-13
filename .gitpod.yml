@@ -3,5 +3,4 @@ image:
 
 vscode:
   extensions:
-    - ms-vscode.csharp
     - Ionide.Ionide-fsharp
