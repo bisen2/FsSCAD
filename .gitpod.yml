@@ -1,0 +1,7 @@
+image:
+  file: .devcontainer/Dockerfile
+
+vscode:
+  extensions:
+    - ms-vscode.csharp
+    - Ionide.Ionide-fsharp
