@@ -1,7 +1,19 @@
+/// These tests compare the Component.toSCAD output to the expected strings.
+/// Their main purpose is detecting breaking changes.
 module SCAD_Generation
 
 open FsCheck.Xunit
 open FsSCAD.Components
+
+let boolToString = function | true -> "true" | false -> "false"
+let ptsToString =
+  List.map (fun (x, y, z) -> $"[{x}, {y}, {z}]")
+  >> fun strs -> System.String.Join(',', strs)
+  >> sprintf "[ %s ]"
+let multiMatrixToString (((x1,y1,z1),(x2,y2,z2),(x3,y3,z3)): MultiMatrix) =
+  $"[ [{x1}, {y1}, {z1} ], [ {x2}, {y2}, {z2} ], [ {x3}, {y3}, {z3} ] ]"
+let componentsToString (toSCADFunc: Component -> string) =
+  List.map toSCADFunc >> List.toArray >> fun strs -> System.String.Join(';', strs) + ";"
 
 module BaseComponents =
 
@@ -9,7 +21,7 @@ module BaseComponents =
   let cube (x, y, z) c =
     Cube(size = (x, y, z), center = c)
     |> Component.toSCAD
-    |> (=) $"cube(size = [{x}, {y}, {z}], center = {Component.boolToString c})"
+    |> (=) $"cube(size = [{x}, {y}, {z}], center = {boolToString c})"
 
   [<Property>]
   let sphere r d fa fs fn =
@@ -21,13 +33,13 @@ module BaseComponents =
   let cylinder h r1 r2 c =
     Cylinder(height = h, radius1 = r1, radius2 = r2, center = c)
     |> Component.toSCAD
-    |> (=) $"cylinder(h = {h}, r1 = {r1}, r2 = {r2}, center = {Component.boolToString c})"
+    |> (=) $"cylinder(h = {h}, r1 = {r1}, r2 = {r2}, center = {boolToString c})"
 
   [<Property>]
   let polyhedron pts faces convexity =
     Polyhedron(points = pts, faces = faces, convexity = convexity)
     |> Component.toSCAD
-    |> (=) $"polyhedron(points = {Component.ptsToString pts}, faces = {Component.ptsToString faces}, convexity = {convexity})"
+    |> (=) $"polyhedron(points = {ptsToString pts}, faces = {ptsToString faces}, convexity = {convexity})"
 
 module Transformations =
 
@@ -65,7 +77,7 @@ module Transformations =
   let multiMatrix m t =
     MultiMatrix(mmatrix = m, target = t)
     |> Component.toSCAD
-    |> (=) $"multimatrix(m = {Component.multiMatrixToString m}) {Component.toSCAD t}"
+    |> (=) $"multimatrix(m = {multiMatrixToString m}) {Component.toSCAD t}"
 
   [<Property>]
   let colorRGBA (r, g, b, a) t =
@@ -89,7 +101,7 @@ module Transformations =
   let offset r d c t =
     Offset(r = r, delta = d, chamfer = c, target = t)
     |> Component.toSCAD
-    |> (=) $"offset(r = {r}, delta = {d}, chamfer = {Component.boolToString c}) {Component.toSCAD t}"
+    |> (=) $"offset(r = {r}, delta = {d}, chamfer = {boolToString c}) {Component.toSCAD t}"
 
   [<Property>]
   let minkowski t =
@@ -109,16 +121,16 @@ module Combinations =
   let union ts =
     Union(targets = ts)
     |> Component.toSCAD
-    |> (=) $"union() {{ {ts |> Component.componentsToString Component.toSCAD} }}"
+    |> (=) $"union() {{ {ts |> componentsToString Component.toSCAD} }}"
 
   [<Property>]
   let intersection ts =
     Intersection(targets = ts)
     |> Component.toSCAD
-    |> (=) $"intersection() {{ {ts |> Component.componentsToString Component.toSCAD} }}"
+    |> (=) $"intersection() {{ {ts |> componentsToString Component.toSCAD} }}"
 
   [<Property>]
   let difference bc dcs =
     Difference(baseComponent = bc, diffComponents = dcs)
     |> Component.toSCAD
-    |> (=) $"difference() {{ {bc :: dcs |> Component.componentsToString Component.toSCAD} }}"
+    |> (=) $"difference() {{ {bc :: dcs |> componentsToString Component.toSCAD} }}"

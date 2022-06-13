@@ -5,6 +5,8 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ComponentBuilder_Tests.fs" />
+    <Compile Include="TestUtils.fs" />
     <Compile Include="SCAD_Generation.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
