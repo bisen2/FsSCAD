@@ -5,8 +5,7 @@ module Components =
   type MultiMatrix_Row = float * float * float
   type MultiMatrix = MultiMatrix_Row * MultiMatrix_Row * MultiMatrix_Row
 
-  /// Type describing an arbitrary OpenSCAD component.
-  ///
+  /// Type describing an arbitrary OpenSCAD component. \
   /// A component can be a base component, a transformation of a target component, or a combination of multiple components.
   type Component =
     // Base components
