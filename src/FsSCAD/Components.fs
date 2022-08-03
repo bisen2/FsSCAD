@@ -30,7 +30,7 @@ module Components =
     | MultiMatrix of mmatrix:MultiMatrix * target:Component
     | ColorRGBA of color:(float*float*float*float) * target:Component
     | ColorHex of color:HexColor * target:Component
-    | ColorName of color:string * target:Component
+    | ColorName of color:ColorName * target:Component
     | Offset of r:float * delta:float * chamfer:bool * target:Component
     | Minkowski of target:Component
     | Hull of target:Component

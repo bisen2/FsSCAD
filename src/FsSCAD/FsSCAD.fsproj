@@ -4,6 +4,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="NamedColors.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="ComponentBuilders.fs" />
   </ItemGroup>
