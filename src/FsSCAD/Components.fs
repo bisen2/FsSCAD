@@ -5,7 +5,15 @@ module Components =
   type MultiMatrix_Row = float * float * float
   type MultiMatrix = MultiMatrix_Row * MultiMatrix_Row * MultiMatrix_Row
 
-  /// Type describing an arbitrary OpenSCAD component. \
+  /// Type describing a valid hexadecimal color definition.
+  type HexColor = HexColor of int
+  /// Validated constructor for the `HexColor` type.
+  /// If the value is not within the range of valid hexadecimal color definitions, `ArgumentOutOfRange` exception is raised.
+  let HexColor (value: int) =
+    if value <= 0xffffff && value >= 0 then HexColor value
+    else System.ArgumentOutOfRangeException(nameof(value)) |> raise
+
+  /// Type describing an arbitrary OpenSCAD component.
   /// A component can be a base component, a transformation of a target component, or a combination of multiple components.
   type Component =
     // Base components
@@ -21,8 +29,8 @@ module Components =
     | Mirror of vector:(float*float*float) * target:Component
     | MultiMatrix of mmatrix:MultiMatrix * target:Component
     | ColorRGBA of color:(float*float*float*float) * target:Component
-    | ColorHex of color:string * target:Component
-    | ColorName of color:string * target:Component
+    | ColorHex of color:HexColor * target:Component
+    | ColorName of color:ColorName * target:Component
     | Offset of r:float * delta:float * chamfer:bool * target:Component
     | Minkowski of target:Component
     | Hull of target:Component

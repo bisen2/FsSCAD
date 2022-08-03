@@ -2,9 +2,28 @@
 /// Their main purpose is detecting breaking changes.
 module ComponentBuilder_Tests
 
+open System
+open FsCheck
 open FsCheck.Xunit
 open FsSCAD.Components
 open FsSCAD.ComponentBuilders
+
+module Utils =
+
+  // The default integer generator does not regularly create large enough numbers to fall outside of the
+  // hex color range, so we need to add a custom generator for this test to verify we handle out of ranges
+
+  type BigInts =
+    static member Int() =
+      Gen.choose(0, Int32.MaxValue)
+      |> Arb.fromGen
+
+  [<Property(Arbitrary=[| typeof<BigInts> |])>]
+  let HexColor value =
+    if value > 0xffffff || value < 0 then
+      Prop.throws<ArgumentOutOfRangeException, _>(lazy (HexColor value))
+    else
+      Prop.ofTestable (HexColor value |> function | HexColor v -> v = value)
 
 module BaseComponents =
 
