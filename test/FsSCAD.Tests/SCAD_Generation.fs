@@ -2,6 +2,7 @@
 /// Their main purpose is detecting breaking changes.
 module SCAD_Generation
 
+open System
 open FsCheck.Xunit
 open FsSCAD.Components
 
@@ -47,90 +48,95 @@ module Transformations =
   let scale (x, y, z) t =
     Scale(vector = (x, y, z), target = t)
     |> Component.toSCAD
-    |> (=) $"scale(v = [{x}, {y}, {z}]) {Component.toSCAD t}"
+    |> (=) $"scale(v = [{x}, {y}, {z}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let resize (x, y, z) t =
     Resize(newSize = (x, y, z), target = t)
     |> Component.toSCAD
-    |> (=) $"resize(newSize = [{x}, {y}, {z}]) {Component.toSCAD t}"
+    |> (=) $"resize(newSize = [{x}, {y}, {z}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let rotate a (x, y, z) t =
     Rotate(angle = a, vector = (x, y, z), target = t)
     |> Component.toSCAD
-    |> (=) $"rotate(a = {a}, v = [{x}, {y}, {z}]) {Component.toSCAD t}"
+    |> (=) $"rotate(a = {a}, v = [{x}, {y}, {z}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let translate (x, y, z) t =
     Translate(vector = (x, y, z), target = t)
     |> Component.toSCAD
-    |> (=) $"translate(v = [{x}, {y}, {z}]) {Component.toSCAD t}"
+    |> (=) $"translate(v = [{x}, {y}, {z}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let mirror (x, y, z) t =
     Mirror(vector = (x, y, z), target = t)
     |> Component.toSCAD
-    |> (=) $"mirror(v = [{x}, {y}, {z}]) {Component.toSCAD t}"
+    |> (=) $"mirror(v = [{x}, {y}, {z}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let multiMatrix m t =
     MultiMatrix(mmatrix = m, target = t)
     |> Component.toSCAD
-    |> (=) $"multimatrix(m = {multiMatrixToString m}) {Component.toSCAD t}"
+    |> (=) $"multimatrix(m = {multiMatrixToString m}){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let colorRGBA (r, g, b, a) t =
     ColorRGBA(color = (r, g, b, a), target = t)
     |> Component.toSCAD
-    |> (=) $"color(c = [{r}, {g}, {b}, {a}]) {Component.toSCAD t}"
+    |> (=) $"color(c = [{r}, {g}, {b}, {a}]){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let colorHex c t =
     ColorHex(color = c, target = t)
     |> Component.toSCAD
-    |> (=) $"color(c = {c}) {Component.toSCAD t}"
+    |> (=) $"color(c = {c}){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let colorName c t =
     ColorName(color = c, target = t)
     |> Component.toSCAD
-    |> (=) $"color(c = {c}) {Component.toSCAD t}"
+    |> (=) $"color(c = {c}){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let offset r d c t =
     Offset(r = r, delta = d, chamfer = c, target = t)
     |> Component.toSCAD
-    |> (=) $"offset(r = {r}, delta = {d}, chamfer = {boolToString c}) {Component.toSCAD t}"
+    |> (=) $"offset(r = {r}, delta = {d}, chamfer = {boolToString c}){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let minkowski t =
     Minkowski(target = t)
     |> Component.toSCAD
-    |> (=) $"minkowski() {Component.toSCAD t}"
+    |> (=) $"minkowski(){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
   [<Property>]
   let hull t =
     Hull(target = t)
     |> Component.toSCAD
-    |> (=) $"hull() {Component.toSCAD t}"
+    |> (=) $"hull(){Environment.NewLine}{Component.toFormattedSCAD 1u t}"
 
 module Combinations =
+
+  let formatCollection =
+    List.map (Component.toFormattedSCAD 1u)
+    >> List.map (fun str -> $"{str};{Environment.NewLine}")
+    >> String.concat ""
 
   [<Property>]
   let union ts =
     Union(targets = ts)
     |> Component.toSCAD
-    |> (=) $"union() {{ {ts |> componentsToString Component.toSCAD} }}"
+    |> (=) $"union() {{{Environment.NewLine}{formatCollection ts}}}"
 
   [<Property>]
   let intersection ts =
     Intersection(targets = ts)
     |> Component.toSCAD
-    |> (=) $"intersection() {{ {ts |> componentsToString Component.toSCAD} }}"
+    |> (=) $"intersection() {{{Environment.NewLine}{formatCollection ts}}}"
 
   [<Property>]
   let difference bc dcs =
     Difference(baseComponent = bc, diffComponents = dcs)
     |> Component.toSCAD
-    |> (=) $"difference() {{ {bc :: dcs |> componentsToString Component.toSCAD} }}"
+    |> (=) $"difference() {{{Environment.NewLine}{formatCollection (bc::dcs)}}}"
